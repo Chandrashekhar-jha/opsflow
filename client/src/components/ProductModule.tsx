@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
+import { Preloader } from './Preloader';
 import { Plus, Search, Package, AlertTriangle, ArrowUpRight, ArrowDownLeft, History, X } from 'lucide-react';
 
 interface ProductModuleProps {
@@ -14,12 +15,10 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
   const [activeTab, setActiveTab] = useState<'inventory' | 'movements'>('inventory');
   const [loading, setLoading] = useState(true);
 
-  // Modals state
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
-  // Product Form
   const [productForm, setProductForm] = useState({
     name: '',
     sku: '',
@@ -30,7 +29,6 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
     warehouseLocation: '',
   });
 
-  // Stock Adjust Form
   const [stockForm, setStockForm] = useState({
     quantityChanged: '',
     movementType: 'IN',
@@ -94,7 +92,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
       });
       fetchProducts();
     } catch (err: any) {
-      alert(err.message || 'Error creating product');
+      alert(err.message || 'Error creating product record');
     }
   };
 
@@ -111,7 +109,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
       setStockForm({ quantityChanged: '', movementType: 'IN', reason: '' });
       fetchProducts();
     } catch (err: any) {
-      alert(err.message || 'Error updating stock');
+      alert(err.message || 'Error updating stock quantity');
     }
   };
 
@@ -119,181 +117,186 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
     <div>
       <div className="header-bar">
         <div>
-          <h1 className="page-title">Product & Inventory Module</h1>
-          <p className="page-subtitle">Track product stock levels, warehouse locations, and movement logs</p>
+          <h1 className="page-title">Inventory & Stock Module</h1>
+          <p className="page-subtitle">Product catalog, warehouse locations, and stock audit logs</p>
         </div>
         {canEdit && (
           <button className="btn btn-primary" onClick={() => setShowAddProductModal(true)}>
-            <Plus size={16} /> Add New Product
+            <Plus size={15} /> Add New Product
           </button>
         )}
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
         <button
           className={`btn ${activeTab === 'inventory' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('inventory')}
         >
-          <Package size={16} /> Current Stock Inventory
+          <Package size={15} /> Inventory Catalog
         </button>
         <button
           className={`btn ${activeTab === 'movements' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('movements')}
         >
-          <History size={16} /> Stock Movement Audit Logs
+          <History size={15} /> Audit Log History
         </button>
       </div>
 
       {activeTab === 'inventory' ? (
         <>
-          {/* Filters */}
-          <div className="glass-card" style={{ padding: '16px', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', marginBottom: '20px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-              <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
               <input
                 type="text"
                 className="form-control"
-                style={{ paddingLeft: '38px' }}
+                style={{ paddingLeft: '36px' }}
                 placeholder="Search products by SKU, name, category, location..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+            {/* Custom Styled Checkbox replacing default browser checkbox */}
+            <label className="custom-checkbox-container">
               <input
                 type="checkbox"
                 checked={lowStockFilter}
                 onChange={(e) => setLowStockFilter(e.target.checked)}
               />
-              <AlertTriangle size={16} color="var(--warning)" /> Show Low Stock Alerts Only
+              <span className="checkbox-checkmark"></span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertTriangle size={15} color="var(--amber-warning)" /> Show Low Stock Items Only
+              </span>
             </label>
           </div>
 
-          {/* Table */}
+          <div className="table-card">
+            <div className="table-container">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>SKU Code</th>
+                    <th>Category</th>
+                    <th>Unit Price</th>
+                    <th>Current Stock</th>
+                    <th>Alert Limit</th>
+                    <th>Warehouse Location</th>
+                    {canEdit && <th>Action</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                        <Preloader />
+                      </td>
+                    </tr>
+                  ) : products.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>
+                        No product records found.
+                      </td>
+                    </tr>
+                  ) : (
+                    products.map((p) => {
+                      const isLow = p.currentStock <= p.minStockAlert;
+                      return (
+                        <tr key={p.id}>
+                          <td style={{ fontWeight: 700, color: 'var(--text-title)' }}>{p.name}</td>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--emerald-primary)' }}>
+                            {p.sku}
+                          </td>
+                          <td>
+                            <span className="badge badge-neutral">{p.category}</span>
+                          </td>
+                          <td style={{ fontWeight: 700 }}>₹{p.unitPrice.toLocaleString('en-IN')}</td>
+                          <td>
+                            <span className={`badge ${isLow ? 'badge-danger' : 'badge-success'}`}>
+                              {p.currentStock} units
+                            </span>
+                          </td>
+                          <td>{p.minStockAlert} units</td>
+                          <td>{p.warehouseLocation}</td>
+                          {canEdit && (
+                            <td>
+                              <button
+                                className="btn btn-secondary btn-sm"
+                                onClick={() => {
+                                  setSelectedProduct(p);
+                                  setShowStockModal(true);
+                                }}
+                              >
+                                Adjust Stock
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="table-card">
           <div className="table-container">
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>Product Name</th>
-                  <th>SKU Code</th>
-                  <th>Category</th>
-                  <th>Unit Price</th>
-                  <th>Current Stock</th>
-                  <th>Alert Limit</th>
-                  <th>Warehouse Bin Location</th>
-                  {canEdit && <th>Action</th>}
+                  <th>Timestamp</th>
+                  <th>Product</th>
+                  <th>Movement Type</th>
+                  <th>Quantity</th>
+                  <th>Reason Reference</th>
+                  <th>Recorded By</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                      Loading inventory records...
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px' }}>
+                      <Preloader />
                     </td>
                   </tr>
-                ) : products.length === 0 ? (
+                ) : movements.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                      No product records found.
+                    <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>
+                      No stock movements logged yet.
                     </td>
                   </tr>
                 ) : (
-                  products.map((p) => {
-                    const isLow = p.currentStock <= p.minStockAlert;
-                    return (
-                      <tr key={p.id}>
-                        <td style={{ fontWeight: 700 }}>{p.name}</td>
-                        <td style={{ fontFamily: 'monospace', color: 'var(--primary)' }}>{p.sku}</td>
-                        <td>
-                          <span className="badge badge-neutral">{p.category}</span>
-                        </td>
-                        <td style={{ fontWeight: 700 }}>₹{p.unitPrice.toLocaleString('en-IN')}</td>
-                        <td>
-                          <span className={`badge ${isLow ? 'badge-danger' : 'badge-success'}`}>
-                            {p.currentStock} units
-                          </span>
-                        </td>
-                        <td>{p.minStockAlert} units</td>
-                        <td>{p.warehouseLocation}</td>
-                        {canEdit && (
-                          <td>
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => {
-                                setSelectedProduct(p);
-                                setShowStockModal(true);
-                              }}
-                            >
-                              Adjust Stock
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })
+                  movements.map((m) => (
+                    <tr key={m.id}>
+                      <td>{new Date(m.createdAt).toLocaleString()}</td>
+                      <td style={{ fontWeight: 600 }}>{m.product?.name || 'Product'}</td>
+                      <td>
+                        <span className={`badge ${m.movementType === 'IN' ? 'badge-success' : 'badge-danger'}`}>
+                          {m.movementType === 'IN' ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
+                          {m.movementType}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 700 }}>{m.quantityChanged} units</td>
+                      <td>{m.reason}</td>
+                      <td>{m.user?.name || 'User'}</td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
-        </>
-      ) : (
-        /* Stock Movement Log Tab */
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>Product</th>
-                <th>Movement Type</th>
-                <th>Quantity</th>
-                <th>Reason</th>
-                <th>Recorded By</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                    Loading stock audit logs...
-                  </td>
-                </tr>
-              ) : movements.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No stock movements logged yet.
-                  </td>
-                </tr>
-              ) : (
-                movements.map((m) => (
-                  <tr key={m.id}>
-                    <td>{new Date(m.createdAt).toLocaleString()}</td>
-                    <td style={{ fontWeight: 600 }}>{m.product?.name || 'Product'}</td>
-                    <td>
-                      <span className={`badge ${m.movementType === 'IN' ? 'badge-success' : 'badge-danger'}`}>
-                        {m.movementType === 'IN' ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
-                        {m.movementType}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 700 }}>{m.quantityChanged} units</td>
-                    <td>{m.reason}</td>
-                    <td>{m.user?.name || 'User'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
         </div>
       )}
 
-      {/* Modal: Add Product */}
       {showAddProductModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800 }}>Add New Inventory Product</h2>
-              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowAddProductModal(false)} />
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-title)' }}>Add New Product</h2>
+              <X size={18} style={{ cursor: 'pointer' }} onClick={() => setShowAddProductModal(false)} />
             </div>
 
             <form onSubmit={handleCreateProduct}>
@@ -310,11 +313,12 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
-                  <label className="form-label">SKU / Code *</label>
+                  <label className="form-label">SKU Code *</label>
                   <input
                     type="text"
                     className="form-control"
                     required
+                    style={{ fontFamily: 'var(--font-mono)' }}
                     value={productForm.sku}
                     onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
                   />
@@ -380,7 +384,7 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Save Product
+                  Save Product Record
                 </button>
               </div>
             </form>
@@ -388,21 +392,15 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
         </div>
       )}
 
-      {/* Modal: Adjust Stock IN/OUT */}
       {showStockModal && selectedProduct && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
-                <h2 style={{ fontSize: '18px', fontWeight: 800 }}>Adjust Product Stock</h2>
+                <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-title)' }}>Adjust Stock Quantity</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{selectedProduct.name} ({selectedProduct.sku})</p>
               </div>
-              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowStockModal(false)} />
-            </div>
-
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
-              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Current Stock Level: </span>
-              <strong style={{ fontSize: '16px', color: 'var(--primary)' }}>{selectedProduct.currentStock} units</strong>
+              <X size={18} style={{ cursor: 'pointer' }} onClick={() => setShowStockModal(false)} />
             </div>
 
             <form onSubmit={handleStockAdjustment}>
@@ -432,12 +430,12 @@ export const ProductModule: React.FC<ProductModuleProps> = ({ userRole }) => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Reason / Reference *</label>
+                <label className="form-label">Reason Reference *</label>
                 <input
                   type="text"
                   className="form-control"
                   required
-                  placeholder="e.g. Vendor Shipment Arrival, Damaged Stock, Audit Correction"
+                  placeholder="e.g. Shipment arrival, Damaged in audit"
                   value={stockForm.reason}
                   onChange={(e) => setStockForm({ ...stockForm, reason: e.target.value })}
                 />

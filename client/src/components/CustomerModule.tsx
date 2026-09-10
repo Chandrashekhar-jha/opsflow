@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
+import { Preloader } from './Preloader';
 import { Search, Filter, Phone, Mail, Calendar, StickyNote, UserPlus, Eye, X } from 'lucide-react';
 
 interface CustomerModuleProps {
@@ -16,7 +17,6 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [newNoteText, setNewNoteText] = useState('');
 
-  // New Customer Form State
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -31,7 +31,6 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
   });
 
   const canEdit = ['Admin', 'Sales'].includes(userRole);
-  const canAddNote = ['Admin', 'Sales'].includes(userRole);
 
   useEffect(() => {
     fetchCustomers();
@@ -75,7 +74,7 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
       });
       fetchCustomers();
     } catch (err: any) {
-      alert(err.message || 'Error creating customer');
+      alert(err.message || 'Error creating customer record');
     }
   };
 
@@ -114,23 +113,22 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
       <div className="header-bar">
         <div>
           <h1 className="page-title">Customer CRM</h1>
-          <p className="page-subtitle">Manage customer directory, lead status, and follow-up activities</p>
+          <p className="page-subtitle">Manage customer directory, lead pipeline, and follow-up activities</p>
         </div>
         {canEdit && (
           <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-            <UserPlus size={16} /> Add New Customer
+            <UserPlus size={15} /> Add New Customer
           </button>
         )}
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="glass-card" style={{ padding: '16px', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
           <input
             type="text"
             className="form-control"
-            style={{ paddingLeft: '38px' }}
+            style={{ paddingLeft: '36px' }}
             placeholder="Search by customer name, business, mobile, email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -138,7 +136,7 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Filter size={16} color="var(--text-muted)" />
+          <Filter size={15} color="var(--text-muted)" />
           <select
             className="form-control"
             style={{ width: '160px' }}
@@ -153,91 +151,91 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
         </div>
       </div>
 
-      {/* Customer Data Table */}
-      <div className="table-container">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Customer Name</th>
-              <th>Business Name</th>
-              <th>Contact Info</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Follow-up Date</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      <div className="table-card">
+        <div className="table-container">
+          <table className="custom-table">
+            <thead>
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                  Loading customer records...
-                </td>
+                <th>Customer Name</th>
+                <th>Business Name</th>
+                <th>Contact Info</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Follow-up Date</th>
+                <th>Action</th>
               </tr>
-            ) : customers.length === 0 ? (
-              <tr>
-                <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No customer records found.
-                </td>
-              </tr>
-            ) : (
-              customers.map((c) => (
-                <tr key={c.id}>
-                  <td style={{ fontWeight: 700 }}>{c.name}</td>
-                  <td>{c.businessName}</td>
-                  <td>
-                    <div style={{ fontSize: '13px' }}>
-                      <Phone size={12} style={{ display: 'inline', marginRight: '4px' }} /> {c.mobile}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                      <Mail size={12} style={{ display: 'inline', marginRight: '4px' }} /> {c.email}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="badge badge-neutral">{c.customerType}</span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        c.status === 'Active'
-                          ? 'badge-success'
-                          : c.status === 'Lead'
-                          ? 'badge-warning'
-                          : 'badge-danger'
-                      }`}
-                    >
-                      {c.status}
-                    </span>
-                  </td>
-                  <td>
-                    {c.followUpDate ? (
-                      <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 600 }}>
-                        <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                        {new Date(c.followUpDate).toLocaleDateString()}
-                      </span>
-                    ) : (
-                      <span style={{ color: 'var(--text-dim)' }}>None</span>
-                    )}
-                  </td>
-                  <td>
-                    <button className="btn btn-secondary btn-sm" onClick={() => handleViewCustomer(c.id)}>
-                      <Eye size={14} /> Details
-                    </button>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px' }}>
+                    <Preloader />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : customers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>
+                    No customer records found.
+                  </td>
+                </tr>
+              ) : (
+                customers.map((c) => (
+                  <tr key={c.id}>
+                    <td style={{ fontWeight: 700, color: 'var(--text-title)' }}>{c.name}</td>
+                    <td>{c.businessName}</td>
+                    <td>
+                      <div style={{ fontSize: '13px' }}>
+                        <Phone size={12} style={{ display: 'inline', marginRight: '4px' }} /> {c.mobile}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        <Mail size={12} style={{ display: 'inline', marginRight: '4px' }} /> {c.email}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="badge badge-neutral">{c.customerType}</span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          c.status === 'Active'
+                            ? 'badge-success'
+                            : c.status === 'Lead'
+                            ? 'badge-warning'
+                            : 'badge-danger'
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td>
+                      {c.followUpDate ? (
+                        <span style={{ fontSize: '13px', color: 'var(--emerald-primary)', fontWeight: 600 }}>
+                          <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                          {new Date(c.followUpDate).toLocaleDateString()}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-dim)' }}>None</span>
+                      )}
+                    </td>
+                    <td>
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleViewCustomer(c.id)}>
+                        <Eye size={13} /> View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Modal: Add Customer */}
       {showAddModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800 }}>Add New Customer</h2>
-              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowAddModal(false)} />
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-title)' }}>Add New Customer</h2>
+              <X size={18} style={{ cursor: 'pointer' }} onClick={() => setShowAddModal(false)} />
             </div>
 
             <form onSubmit={handleCreateCustomer}>
@@ -346,16 +344,6 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Initial Notes</label>
-                <textarea
-                  className="form-control"
-                  rows={2}
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                />
-              </div>
-
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
                   Cancel
@@ -369,47 +357,41 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
         </div>
       )}
 
-      {/* Modal: Customer Detail & Follow-up Log */}
       {showDetailModal && selectedCustomer && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '650px' }}>
+          <div className="modal-content" style={{ maxWidth: '620px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{selectedCustomer.name}</h2>
+                <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-title)' }}>{selectedCustomer.name}</h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{selectedCustomer.businessName}</p>
               </div>
-              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowDetailModal(false)} />
+              <X size={18} style={{ cursor: 'pointer' }} onClick={() => setShowDetailModal(false)} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 'var(--radius-md)', marginBottom: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 'var(--radius-md)', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Mobile</div>
+                <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Mobile</div>
                 <div style={{ fontWeight: 600 }}>{selectedCustomer.mobile}</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Email</div>
+                <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Email</div>
                 <div style={{ fontWeight: 600 }}>{selectedCustomer.email}</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>GST Number</div>
-                <div style={{ fontWeight: 600 }}>{selectedCustomer.gstNumber || 'N/A'}</div>
+                <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>GST Number</div>
+                <div style={{ fontWeight: 600 }}>{selectedCustomer.gstNumber || 'None'}</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Type / Status</div>
+                <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Type / Status</div>
                 <div>
                   <span className="badge badge-neutral" style={{ marginRight: '6px' }}>{selectedCustomer.customerType}</span>
                   <span className="badge badge-success">{selectedCustomer.status}</span>
                 </div>
               </div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Address</div>
-                <div>{selectedCustomer.address}</div>
-              </div>
             </div>
 
-            {/* Follow-up Timeline */}
-            <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
-              <StickyNote size={16} style={{ display: 'inline', marginRight: '6px' }} /> Follow-Up Notes & Interactions
+            <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-title)' }}>
+              <StickyNote size={15} style={{ display: 'inline', marginRight: '6px' }} /> Follow-Up Activity Log
             </h3>
 
             {canEdit && (
@@ -427,13 +409,13 @@ export const CustomerModule: React.FC<CustomerModuleProps> = ({ userRole }) => {
               </form>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '200px', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '180px', overflowY: 'auto' }}>
               {selectedCustomer.notesList?.length === 0 ? (
                 <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No interaction notes recorded yet.</div>
               ) : (
                 selectedCustomer.notesList?.map((n: any) => (
-                  <div key={n.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--primary)' }}>
-                    <div style={{ fontSize: '13px', color: 'var(--text-main)' }}>{n.note}</div>
+                  <div key={n.id} style={{ background: 'var(--bg-input)', padding: '12px', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--emerald-primary)' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-title)' }}>{n.note}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
                       <span>By: {n.user?.name || 'Staff'}</span>
                       <span>{new Date(n.createdAt).toLocaleString()}</span>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
 import { generateChallanPDF } from '../utils/pdfExport';
+import { Preloader } from './Preloader';
 import { Plus, Search, Filter, Download, CheckCircle, Trash2, Eye, X } from 'lucide-react';
 
 interface ChallanModuleProps {
@@ -15,12 +16,10 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedChallan, setSelectedChallan] = useState<any | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Create Form State
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [challanItems, setChallanItems] = useState<{ productId: string; quantity: number }[]>([
     { productId: '', quantity: 1 },
@@ -60,7 +59,7 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
       setCustomers(custRes.data || []);
       setProducts(prodRes.data || []);
     } catch (err) {
-      console.error('Failed to fetch customer/product metadata:', err);
+      console.error('Failed to fetch metadata:', err);
     }
   };
 
@@ -154,32 +153,31 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
     <div>
       <div className="header-bar">
         <div>
-          <h1 className="page-title">Sales Challan Module</h1>
-          <p className="page-subtitle">Generate sales orders, freeze item snapshots, and control inventory fulfillment</p>
+          <h1 className="page-title">Sales Challans</h1>
+          <p className="page-subtitle">Generate sales orders, freeze item snapshots, and control order fulfillment</p>
         </div>
         {canCreate && (
           <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-            <Plus size={16} /> Create Sales Challan
+            <Plus size={15} /> Create Sales Challan
           </button>
         )}
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="glass-card" style={{ padding: '16px', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-dim)' }} />
           <input
             type="text"
             className="form-control"
-            style={{ paddingLeft: '38px' }}
-            placeholder="Search by Challan No (e.g. CH-2026-0001) or customer name..."
+            style={{ paddingLeft: '36px' }}
+            placeholder="Search by Challan Number or customer name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Filter size={16} color="var(--text-muted)" />
+          <Filter size={15} color="var(--text-muted)" />
           <select
             className="form-control"
             style={{ width: '160px' }}
@@ -194,92 +192,93 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
         </div>
       </div>
 
-      {/* Challan Table */}
-      <div className="table-container">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Challan No</th>
-              <th>Customer</th>
-              <th>Total Qty</th>
-              <th>Total Value</th>
-              <th>Status</th>
-              <th>Created By</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      <div className="table-card">
+        <div className="table-container">
+          <table className="custom-table">
+            <thead>
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                  Loading sales challans...
-                </td>
+                <th>Challan Number</th>
+                <th>Customer</th>
+                <th>Total Items</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Created By</th>
+                <th>Date</th>
+                <th>Actions</th>
               </tr>
-            ) : challans.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No sales challans found.
-                </td>
-              </tr>
-            ) : (
-              challans.map((c) => (
-                <tr key={c.id}>
-                  <td style={{ fontWeight: 800, color: 'var(--primary)' }}>{c.challanNumber}</td>
-                  <td>
-                    <div style={{ fontWeight: 600 }}>{c.customer?.name || 'Customer'}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{c.customer?.businessName}</div>
-                  </td>
-                  <td style={{ fontWeight: 600 }}>{c.totalQuantity} items</td>
-                  <td style={{ fontWeight: 700 }}>₹{c.totalAmount.toLocaleString('en-IN')}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        c.status === 'Confirmed'
-                          ? 'badge-success'
-                          : c.status === 'Draft'
-                          ? 'badge-warning'
-                          : 'badge-danger'
-                      }`}
-                    >
-                      {c.status}
-                    </span>
-                  </td>
-                  <td>{c.user?.name || 'Sales Staff'}</td>
-                  <td>{new Date(c.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleViewChallan(c.id)}>
-                        <Eye size={14} /> View
-                      </button>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        style={{ color: 'var(--accent)' }}
-                        onClick={() => generateChallanPDF(c)}
-                        title="Download PDF Invoice"
-                      >
-                        <Download size={14} /> PDF
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                    <Preloader />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : challans.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>
+                    No sales challans found.
+                  </td>
+                </tr>
+              ) : (
+                challans.map((c) => (
+                  <tr key={c.id}>
+                    <td style={{ fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--emerald-primary)' }}>
+                      {c.challanNumber}
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>{c.customer?.name || 'Customer'}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{c.customer?.businessName}</div>
+                    </td>
+                    <td style={{ fontWeight: 600 }}>{c.totalQuantity} items</td>
+                    <td style={{ fontWeight: 700 }}>₹{c.totalAmount.toLocaleString('en-IN')}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          c.status === 'Confirmed'
+                            ? 'badge-success'
+                            : c.status === 'Draft'
+                            ? 'badge-warning'
+                            : 'badge-danger'
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td>{c.user?.name || 'Sales Staff'}</td>
+                    <td>{new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button className="btn btn-secondary btn-sm" onClick={() => handleViewChallan(c.id)}>
+                          <Eye size={13} /> View
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{ color: 'var(--cyan-accent)' }}
+                          onClick={() => generateChallanPDF(c)}
+                        >
+                          <Download size={13} /> PDF
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Modal: Create Sales Challan Builder */}
       {showCreateModal && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '700px' }}>
+          <div className="modal-content" style={{ maxWidth: '650px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800 }}>Create New Sales Challan</h2>
-              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowCreateModal(false)} />
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-title)' }}>Create Sales Challan</h2>
+              <X size={18} style={{ cursor: 'pointer' }} onClick={() => setShowCreateModal(false)} />
             </div>
 
             {formError && (
-              <div style={{ background: 'var(--danger-bg)', color: 'var(--danger)', padding: '10px', borderRadius: 'var(--radius-md)', fontSize: '13px', marginBottom: '16px' }}>
+              <div style={{ background: 'var(--rose-light)', color: 'var(--rose-danger)', padding: '10px', borderRadius: 'var(--radius-md)', fontSize: '13px', marginBottom: '16px' }}>
                 {formError}
               </div>
             )}
@@ -302,12 +301,11 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
                 </select>
               </div>
 
-              {/* Items Table */}
               <div style={{ margin: '20px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <label className="form-label">Challan Line Items</label>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddItemRow}>
-                    <Plus size={14} /> Add Product Line
+                    <Plus size={13} /> Add Product Line
                   </button>
                 </div>
 
@@ -345,8 +343,8 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
 
                       {challanItems.length > 1 && (
                         <Trash2
-                          size={18}
-                          color="var(--danger)"
+                          size={16}
+                          color="var(--rose-danger)"
                           style={{ cursor: 'pointer' }}
                           onClick={() => handleRemoveItemRow(idx)}
                         />
@@ -356,8 +354,7 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
                 })}
               </div>
 
-              {/* Total & Save Option */}
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 'var(--radius-md)', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: 'var(--radius-md)', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <label className="form-label" style={{ marginBottom: '4px' }}>Challan Order Action</label>
                   <select
@@ -366,13 +363,13 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
                     value={creationStatus}
                     onChange={(e) => setCreationStatus(e.target.value as any)}
                   >
-                    <option value="Confirmed">Confirmed (Reduces Stock Now)</option>
-                    <option value="Draft">Draft (Hold - No Stock Change)</option>
+                    <option value="Confirmed">Confirmed (Deducts Stock)</option>
+                    <option value="Draft">Draft (Hold Order)</option>
                   </select>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Calculated Total Amount</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--success)' }}>
+                  <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Total Amount</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--emerald-primary)' }}>
                     ₹{calculateFormTotal().toLocaleString('en-IN')}
                   </div>
                 </div>
@@ -391,33 +388,32 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
         </div>
       )}
 
-      {/* Modal: Challan View Detail & PDF */}
       {showDetailModal && selectedChallan && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '650px' }}>
+          <div className="modal-content" style={{ maxWidth: '620px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{selectedChallan.challanNumber}</h2>
+                <h2 style={{ fontSize: '18px', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--emerald-primary)' }}>
+                  {selectedChallan.challanNumber}
+                </h2>
                 <span className={`badge ${selectedChallan.status === 'Confirmed' ? 'badge-success' : 'badge-warning'}`}>
                   {selectedChallan.status}
                 </span>
               </div>
-              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowDetailModal(false)} />
+              <X size={18} style={{ cursor: 'pointer' }} onClick={() => setShowDetailModal(false)} />
             </div>
 
-            {/* Customer Snapshot Card */}
             <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Billed Customer Snapshot</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>Billed Customer Snapshot</div>
               <div style={{ fontWeight: 700 }}>{selectedChallan.customer?.name || 'Customer'}</div>
               <div style={{ fontSize: '13px' }}>{selectedChallan.customer?.businessName}</div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
                 Phone: {selectedChallan.customer?.mobile} | Email: {selectedChallan.customer?.email}
               </div>
             </div>
 
-            {/* Items Table */}
-            <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Order Snapshot Items</h3>
-            <div className="table-container" style={{ marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '10px', color: 'var(--text-title)' }}>Line Item Snapshot</h3>
+            <div className="table-card" style={{ marginBottom: '20px' }}>
               <table className="custom-table">
                 <thead>
                   <tr>
@@ -445,14 +441,13 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
               </table>
             </div>
 
-            {/* Actions & Status Change */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button
                 className="btn btn-secondary"
-                style={{ color: 'var(--accent)' }}
+                style={{ color: 'var(--cyan-accent)' }}
                 onClick={() => generateChallanPDF(selectedChallan)}
               >
-                <Download size={16} /> Export PDF Invoice
+                <Download size={15} /> Download Invoice PDF
               </button>
 
               {canCreate && selectedChallan.status === 'Draft' && (
@@ -460,7 +455,7 @@ export const ChallanModule: React.FC<ChallanModuleProps> = ({ userRole }) => {
                   className="btn btn-primary"
                   onClick={() => handleStatusUpdate(selectedChallan.id, 'Confirmed')}
                 >
-                  <CheckCircle size={16} /> Confirm Challan (Deduct Stock)
+                  <CheckCircle size={15} /> Confirm Challan Order
                 </button>
               )}
             </div>

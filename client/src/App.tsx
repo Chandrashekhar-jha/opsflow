@@ -100,7 +100,7 @@ export const App: React.FC = () => {
 
       {/* Main Workspace View */}
       <main className="main-content">
-        {activeTab === 'dashboard' && <Dashboard userRole={currentUser.role} />}
+        {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'customers' && <CustomerModule userRole={currentUser.role} />}
         {activeTab === 'products' && <ProductModule userRole={currentUser.role} />}
         {activeTab === 'challans' && <ChallanModule userRole={currentUser.role} />}

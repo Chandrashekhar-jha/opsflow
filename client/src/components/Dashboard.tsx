@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../services/api';
+import { Preloader } from './Preloader';
 import { Users, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
 
-interface DashboardProps {
-  userRole?: string;
-}
-
-export const Dashboard: React.FC<DashboardProps> = ({ userRole = 'Admin' }) => {
+export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
     totalCustomers: 0,
     activeLeads: 0,
@@ -53,14 +50,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ userRole = 'Admin' }) => {
       setLowStockItems(lowStock);
       setRecentChallans(challans.slice(0, 5));
     } catch (err) {
-      console.error('Failed to load dashboard data:', err);
+      console.error('Failed to load dashboard metrics:', err);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <div style={{ color: 'var(--text-muted)' }}>Loading operations dashboard...</div>;
+    return <Preloader />;
   }
 
   return (
@@ -73,67 +70,89 @@ export const Dashboard: React.FC<DashboardProps> = ({ userRole = 'Admin' }) => {
       </div>
 
       <div className="card-grid">
-        <div className="glass-card">
-          <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--primary)' }}>
-            <Users size={22} />
+        <div className="stat-card">
+          <div className="stat-header">
+            <span className="stat-label">Total Customers</span>
+            <div className="stat-icon" style={{ background: 'var(--emerald-light)', color: 'var(--emerald-primary)' }}>
+              <Users size={20} />
+            </div>
           </div>
           <div className="stat-value">{stats.totalCustomers}</div>
-          <div className="stat-label">Total Customers ({stats.activeLeads} Leads)</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            {stats.activeLeads} active leads in pipeline
+          </div>
         </div>
 
-        <div className="glass-card">
-          <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)' }}>
-            <AlertTriangle size={22} />
+        <div className="stat-card">
+          <div className="stat-header">
+            <span className="stat-label">Stock Alerts</span>
+            <div className="stat-icon" style={{ background: 'var(--amber-light)', color: 'var(--amber-warning)' }}>
+              <AlertTriangle size={20} />
+            </div>
           </div>
-          <div className="stat-value" style={{ color: stats.lowStockCount > 0 ? 'var(--warning)' : 'inherit' }}>
+          <div className="stat-value" style={{ color: stats.lowStockCount > 0 ? 'var(--amber-warning)' : 'inherit' }}>
             {stats.lowStockCount}
           </div>
-          <div className="stat-label">Low Stock Alerts</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Items below minimum threshold
+          </div>
         </div>
 
-        <div className="glass-card">
-          <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)' }}>
-            <ShoppingCart size={22} />
+        <div className="stat-card">
+          <div className="stat-header">
+            <span className="stat-label">Total Orders</span>
+            <div className="stat-icon" style={{ background: 'var(--cyan-light)', color: 'var(--cyan-accent)' }}>
+              <ShoppingCart size={20} />
+            </div>
           </div>
           <div className="stat-value">{stats.totalChallans}</div>
-          <div className="stat-label">Total Sales Orders / Challans</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Generated Sales Challans
+          </div>
         </div>
 
-        <div className="glass-card">
-          <div className="stat-icon" style={{ background: 'rgba(236, 72, 153, 0.15)', color: 'var(--secondary)' }}>
-            <TrendingUp size={22} />
+        <div className="stat-card">
+          <div className="stat-header">
+            <span className="stat-label">Confirmed Revenue</span>
+            <div className="stat-icon" style={{ background: 'var(--emerald-light)', color: 'var(--emerald-primary)' }}>
+              <TrendingUp size={20} />
+            </div>
           </div>
-          <div className="stat-value">₹{stats.confirmedRevenue.toLocaleString('en-IN')}</div>
-          <div className="stat-label">Confirmed Revenue</div>
+          <div className="stat-value" style={{ fontSize: '24px' }}>
+            ₹{stats.confirmedRevenue.toLocaleString('en-IN')}
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Total billed value
+          </div>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-        {/* Low Stock Alerts */}
-        <div className="glass-card" style={{ padding: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+        {/* Low Stock Alert Table */}
+        <div className="table-card" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <AlertTriangle size={18} color="var(--warning)" />
-            <h3 style={{ fontSize: '16px', fontWeight: 700 }}>Critical Low Stock Alert</h3>
+            <AlertTriangle size={18} color="var(--amber-warning)" />
+            <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-title)' }}>Low Stock Inventory Alert</h3>
           </div>
 
           {lowStockItems.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>All inventory items are well stocked!</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>All inventory items are well stocked.</div>
           ) : (
             <div className="table-container">
               <table className="custom-table">
                 <thead>
                   <tr>
-                    <th>Product</th>
+                    <th>Product Name</th>
                     <th>SKU</th>
                     <th>Current Stock</th>
-                    <th>Min Alert Threshold</th>
+                    <th>Alert Threshold</th>
                   </tr>
                 </thead>
                 <tbody>
                   {lowStockItems.map((item) => (
                     <tr key={item.id}>
                       <td style={{ fontWeight: 600 }}>{item.name}</td>
-                      <td>{item.sku}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{item.sku}</td>
                       <td>
                         <span className="badge badge-warning">{item.currentStock} units</span>
                       </td>
@@ -146,23 +165,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ userRole = 'Admin' }) => {
           )}
         </div>
 
-        {/* Recent Challans */}
-        <div className="glass-card" style={{ padding: '20px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>Recent Sales Challans</h3>
+        {/* Recent Orders Table */}
+        <div className="table-card" style={{ padding: '20px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-title)', marginBottom: '16px' }}>
+            Recent Sales Orders
+          </h3>
           <div className="table-container">
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>Challan No</th>
+                  <th>Challan Number</th>
                   <th>Customer</th>
                   <th>Status</th>
-                  <th>Total</th>
+                  <th>Total Amount</th>
                 </tr>
               </thead>
               <tbody>
                 {recentChallans.map((c) => (
                   <tr key={c.id}>
-                    <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{c.challanNumber}</td>
+                    <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--emerald-primary)' }}>
+                      {c.challanNumber}
+                    </td>
                     <td>{c.customer?.name || 'Customer'}</td>
                     <td>
                       <span
