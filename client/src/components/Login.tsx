@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { apiFetch, setAuthToken, setCurrentUser } from '../services/api';
-import { ShieldCheck, UserCheck, Warehouse, CreditCard, Lock, Mail, Building2 } from 'lucide-react';
+import { ShieldCheck, UserCheck, Warehouse, CreditCard, Lock, Mail } from 'lucide-react';
 
 interface LoginProps {
   onLoginSuccess: (user: any) => void;
@@ -42,10 +42,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     <div className="login-wrapper">
       <div className="login-card">
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div className="brand-icon-box" style={{ margin: '0 auto 12px auto', width: '44px', height: '44px' }}>
-            <Building2 size={24} />
-          </div>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-title)' }}>Operations Portal</h2>
+          <img
+            src="/favicon.jpg"
+            alt="OpsFlow Logo"
+            style={{ width: '48px', height: '48px', borderRadius: 'var(--radius-md)', objectFit: 'cover', margin: '0 auto 12px auto', display: 'block' }}
+          />
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-title)' }}>OpsFlow Operations Portal</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
             Wholesale ERP & Customer CRM Operations
           </p>

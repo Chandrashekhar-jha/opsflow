@@ -11,7 +11,6 @@ import {
   Package,
   FileText,
   LogOut,
-  Building2,
   Sun,
   Moon,
 } from 'lucide-react';
@@ -50,9 +49,11 @@ export const App: React.FC = () => {
       {/* Sidebar Navigation */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="brand-icon-box">
-            <Building2 size={22} />
-          </div>
+          <img
+            src="/favicon.jpg"
+            alt="OpsFlow Logo"
+            style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', objectFit: 'cover' }}
+          />
           <div>
             <div className="brand-title">OpsFlow</div>
             <div className="brand-subtitle">Mini ERP + CRM Portal</div>
