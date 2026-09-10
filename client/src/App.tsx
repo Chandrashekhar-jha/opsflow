@@ -12,11 +12,14 @@ import {
   FileText,
   LogOut,
   Building2,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'customers' | 'products' | 'challans'>('dashboard');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -24,6 +27,12 @@ export const App: React.FC = () => {
       setCurrentUser(user);
     }
   }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
   const handleLogout = () => {
     removeAuthToken();
@@ -40,12 +49,12 @@ export const App: React.FC = () => {
       {/* Sidebar Navigation */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="brand-icon">
-            <Building2 size={24} />
+          <div className="brand-icon-box">
+            <Building2 size={22} />
           </div>
           <div>
-            <div className="brand-title">Mini ERP + CRM</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Wholesale Operations</div>
+            <div className="brand-title">OpsFlow</div>
+            <div className="brand-subtitle">Mini ERP + CRM Portal</div>
           </div>
         </div>
 
@@ -54,7 +63,7 @@ export const App: React.FC = () => {
             className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            <LayoutDashboard size={18} /> Dashboard
+            <LayoutDashboard size={17} /> Dashboard
           </li>
           
           {['Admin', 'Sales', 'Accounts'].includes(currentUser.role) && (
@@ -62,7 +71,7 @@ export const App: React.FC = () => {
               className={`nav-item ${activeTab === 'customers' ? 'active' : ''}`}
               onClick={() => setActiveTab('customers')}
             >
-              <Users size={18} /> Customer CRM
+              <Users size={17} /> Customer CRM
             </li>
           )}
 
@@ -71,7 +80,7 @@ export const App: React.FC = () => {
               className={`nav-item ${activeTab === 'products' ? 'active' : ''}`}
               onClick={() => setActiveTab('products')}
             >
-              <Package size={18} /> Inventory & Stock
+              <Package size={17} /> Inventory & Stock
             </li>
           )}
 
@@ -80,10 +89,17 @@ export const App: React.FC = () => {
               className={`nav-item ${activeTab === 'challans' ? 'active' : ''}`}
               onClick={() => setActiveTab('challans')}
             >
-              <FileText size={18} /> Sales Challans
+              <FileText size={17} /> Sales Challans
             </li>
           )}
         </ul>
+
+        <div className="sidebar-actions">
+          <button className="theme-toggle-btn" onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </button>
+        </div>
 
         <div className="sidebar-user">
           <div className="user-info">
@@ -91,7 +107,7 @@ export const App: React.FC = () => {
             <span className={`role-badge role-${currentUser.role}`}>{currentUser.role}</span>
           </div>
           <LogOut
-            size={18}
+            size={17}
             style={{ cursor: 'pointer', color: 'var(--text-muted)' }}
             onClick={handleLogout}
           />

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Slate & Emerald Professional Palette */
+  /* Default Dark Mode Palette */
   --bg-app: #0b0f17;
   --bg-sidebar: #111827;
   --bg-card: #1f2937;
@@ -44,6 +44,28 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Light Theme Variables Override */
+[data-theme="light"] {
+  --bg-app: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-input: #f1f5f9;
+  
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-accent: rgba(16, 185, 129, 0.4);
+  
+  --text-title: #0f172a;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  --shadow-popup: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -58,6 +80,7 @@ body {
   overflow-x: hidden;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Preloader UI */
@@ -109,10 +132,11 @@ body {
   bottom: 0;
   left: 0;
   z-index: 100;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .sidebar-brand {
-  padding: 24px 20px;
+  padding: 20px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -167,7 +191,7 @@ body {
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(125, 125, 125, 0.08);
   color: var(--text-title);
 }
 
@@ -177,10 +201,18 @@ body {
   border: 1px solid var(--border-accent);
 }
 
+.sidebar-actions {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .sidebar-user {
   padding: 16px 20px;
   border-top: 1px solid var(--border-subtle);
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -235,6 +267,27 @@ body {
   font-size: 13.5px;
   color: var(--text-muted);
   margin-top: 4px;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-title);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-strong);
 }
 
 /* UI Cards Grid */
@@ -308,7 +361,7 @@ body {
 }
 
 .custom-table th {
-  background: #161e2e;
+  background: var(--bg-input);
   padding: 14px 20px;
   font-size: 11.5px;
   font-weight: 700;
@@ -330,7 +383,7 @@ body {
 }
 
 .custom-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(125, 125, 125, 0.04);
 }
 
 /* Form Controls & Labels */
@@ -364,7 +417,7 @@ body {
   box-shadow: 0 0 0 3px var(--emerald-light);
 }
 
-/* Custom Checkbox Styling (Replaces Default Browser Checkbox) */
+/* Custom Checkbox Styling */
 .custom-checkbox-container {
   display: inline-flex;
   align-items: center;
@@ -501,7 +554,7 @@ body {
 .badge-success { background: var(--emerald-light); color: var(--emerald-primary); border: 1px solid rgba(16, 185, 129, 0.2); }
 .badge-warning { background: var(--amber-light); color: var(--amber-warning); border: 1px solid rgba(245, 158, 11, 0.2); }
 .badge-danger { background: var(--rose-light); color: var(--rose-danger); border: 1px solid rgba(244, 63, 94, 0.2); }
-.badge-neutral { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-subtle); }
+.badge-neutral { background: rgba(125, 125, 125, 0.1); color: var(--text-muted); border: 1px solid var(--border-subtle); }
 
 /* Login Form Styling */
 .login-wrapper {
@@ -548,7 +601,7 @@ body {
   color: var(--emerald-primary);
 }
 
-/* Responsive Rules for Small Devices */
+/* Responsive Rules */
 @media (max-width: 900px) {
   .app-container {
     flex-direction: column;

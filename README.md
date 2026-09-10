@@ -1,135 +1,94 @@
-# Mini ERP + CRM Operations Portal
+# OpsFlow - Mini ERP + CRM Operational Portal
 
-A full-stack Operations Portal designed for a wholesale & distribution business. Built with **Node.js, Express, TypeScript, Prisma (SQLite/PostgreSQL), and React (Vite)**.
-
----
-
-## 🌟 Highlights & Features
-
-1. **Role-Based Authentication (RBAC)**:
-   - 4 Role Levels: `Admin`, `Sales`, `Warehouse`, `Accounts`.
-   - Preset 1-Click Login buttons on the login page for instant reviewer demoing.
-2. **Customer CRM Module**:
-   - Manage Customer directory (Retail, Wholesale, Distributor).
-   - Track status (`Lead` ➔ `Active` ➔ `Inactive`).
-   - Recorded follow-up notes with dates & interaction logs.
-3. **Product & Inventory Module**:
-   - Track stock levels, SKU codes, categories, and warehouse bin locations.
-   - Real-time **Low Stock Alert** indicators when stock falls below threshold.
-   - Complete **Stock Movement Audit Log** (IN/OUT adjustments with audit reasons).
-4. **Sales Challan & Order Fulfillment Module**:
-   - Generate unique sequential Sales Challans (`CH-2026-0001`).
-   - Freeze **Customer & Product snapshot data** (preserves historical pricing even if catalog prices change).
-   - **Smart Stock Fulfillment Logic**:
-     - `Draft` status holds order without changing inventory.
-     - `Confirmed` status automatically reduces stock in an atomic database transaction.
-     - **Negative Stock Protection**: API returns clean errors if requested quantity exceeds available stock.
-5. **Bonus - Export Invoice as PDF**:
-   - 1-Click printable PDF export feature for any sales order/challan.
-6. **Postman Collection Included**:
-   - Pre-configured [`postman_collection.json`](./postman_collection.json) in project root.
+OpsFlow is a full stack Operations Portal designed for wholesale and distribution enterprises. Built with Node.js, Express, TypeScript, Supabase PostgreSQL, and React with Vite.
 
 ---
 
-## 🔑 Test Credentials (All Roles)
+## Technical Overview
 
-| Role | Email | Password | Permissions |
+- Frontend: React 18, TypeScript, Vite, Bespoke CSS Token System (Dark and Light Themes), jsPDF Invoice Generator
+- Backend: Node.js, Express.js, TypeScript, Supabase Client SDK, JWT Authentication, Role Based Access Control
+- Database: Supabase Cloud PostgreSQL Database
+
+---
+
+## Features
+
+1. Role Based Access Control:
+   - Admin: Full system permissions
+   - Sales: Customer management and sales order creation
+   - Warehouse: Stock management and inventory audit logs
+   - Accounts: Financial views, billing reports, and PDF invoice downloads
+
+2. Customer CRM Module:
+   - Complete customer directory (Retail, Wholesale, Distributor)
+   - Status pipeline tracking (Lead, Active, Inactive)
+   - Timed follow up dates and interaction notes log
+
+3. Product and Inventory Module:
+   - Product catalog with SKU codes and warehouse locations
+   - Real time low stock alerts
+   - Stock movement audit logs (IN and OUT adjustments)
+
+4. Sales Challan Module:
+   - Automated sequential challan numbering (CH-2026-XXXX)
+   - Frozen customer and product snapshot data for accurate historical record keeping
+   - Stock fulfillment logic: Draft status holds order; Confirmed status automatically decrements inventory
+   - Insufficient stock validation prevents negative inventory
+
+5. Bonus PDF Invoice Export:
+   - One click client side PDF invoice generation for sales challans
+
+---
+
+## Test Credentials
+
+| Role | Email | Password | Access Rights |
 | :--- | :--- | :--- | :--- |
-| 👑 **Admin** | `admin@erp.com` | `password123` | Full System Access & Override Rights |
-| 💼 **Sales** | `sales@erp.com` | `password123` | Customer CRM & Create/Confirm Sales Challans |
-| 📦 **Warehouse** | `warehouse@erp.com` | `password123` | Inventory Catalog & Stock IN/OUT Adjustments |
-| 💳 **Accounts** | `accounts@erp.com` | `password123` | Financial Views, Customer Reports & Order Tracking |
+| Admin | admin@erp.com | password123 | Full System Access |
+| Sales | sales@erp.com | password123 | Customers and Sales Challans |
+| Warehouse | warehouse@erp.com | password123 | Product Catalog and Stock IN/OUT |
+| Accounts | accounts@erp.com | password123 | Billing Views and Invoice Export |
 
 ---
 
-## 🚀 How to Run Locally
+## Local Setup Instructions
 
-### Prerequisites
-- Node.js (v18 or higher recommended)
-- npm
-
-### 1. Setup & Run Backend (`/server`)
+### 1. Backend Setup
 
 ```bash
 cd server
-
-# Install dependencies
 npm install
-
-# Push Prisma Schema to database & generate client
-npx prisma generate
-npx prisma db push
-
-# Seed sample data (users, customers, products, stock logs, challans)
-npm run seed
-
-# Start backend dev server (Runs on http://localhost:5000)
 npm run dev
 ```
 
-### 2. Setup & Run Frontend (`/client`)
+### 2. Frontend Setup
 
 ```bash
 cd client
-
-# Install dependencies
 npm install
-
-# Start Vite dev server (Runs on http://localhost:5173)
 npm run dev
 ```
 
 ---
 
-## 📂 Project Architecture
+## Deployment Setup
 
-```
-ERP-CRM/
-├── postman_collection.json   # Exported Postman API Collection
-├── README.md                 # Project Setup & Documentation
-├── server/                   # Node.js + Express + TypeScript Backend
-│   ├── prisma/
-│   │   ├── schema.prisma     # Prisma ORM Database Schema
-│   │   └── seed.ts           # Demo Data Seeder Script
-│   ├── src/
-│   │   ├── middleware/       # Auth JWT & RBAC Middlewares
-│   │   ├── routes/           # Auth, Customer, Product, Challan REST APIs
-│   │   └── server.ts         # Main Express Application Entry point
-│   ├── .env
-│   └── package.json
-└── client/                   # React + TypeScript + Vite Frontend
-    ├── src/
-    │   ├── components/       # Login, Dashboard, Customer, Product, Challan Modules
-    │   ├── services/         # API Fetch Helpers with Auth Token injection
-    │   ├── utils/            # jsPDF Invoice Export Helper
-    │   ├── App.tsx           # Main App with Sidebar Navigation
-    │   └── index.css         # Glassmorphism & Custom HSL CSS Design System
-    └── package.json
-```
+### Backend (Render)
+- Root Directory: `server`
+- Build Command: `npm install && npm run build`
+- Start Command: `npm run start`
+
+### Frontend (Vercel)
+- Framework Preset: `Vite`
+- Root Directory: `client`
+- Build Command: `npm run build`
+- Output Directory: `dist`
 
 ---
 
-## ☁️ Deployment Instructions
+## Documentation Links
 
-### Deploying Backend (Render / Railway / Fly.io)
-1. Push repository to GitHub.
-2. Create a Web Service on **Render** pointing to `/server`.
-3. Build Command: `npm install && npx prisma generate && npx prisma db push && npm run seed`
-4. Start Command: `npm run start`
-5. Environment Variables:
-   - `PORT=5000`
-   - `DATABASE_URL=file:./dev.db` (or PostgreSQL connection string)
-   - `JWT_SECRET=your_jwt_secret_key`
-
-### Deploying Frontend (Vercel / Netlify / Render Static)
-1. Create a Static Site on **Vercel / Netlify** pointing to `/client`.
-2. Build Command: `npm run build`
-3. Output Directory: `dist`
-4. Update `API_BASE` in `client/src/services/api.ts` to match your live backend URL.
-
----
-
-## 📝 Assumptions & Known Limitations
-
-- **Local Database**: Built with SQLite via Prisma for instant local setup with zero external DB installation required. Can switch to PostgreSQL by changing `provider = "postgresql"` in `schema.prisma`.
-- **JWT Expiry**: Set to 24 hours for evaluation convenience.
+- API Documentation: [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
+- Architecture Explanation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Known Limitations: [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md)
