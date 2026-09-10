@@ -1,5 +1,7 @@
 # Architecture Explanation
 
+![OpsFlow Logo](./opsflow_logo.jpg)
+
 OpsFlow is designed as a decoupled, multi tier Full Stack Enterprise Operations Portal.
 
 ```
@@ -30,7 +32,7 @@ OpsFlow is designed as a decoupled, multi tier Full Stack Enterprise Operations 
 
 ### 1. Presentation Layer (Frontend)
 - Built with React 18 and TypeScript.
-- Styled using a bespoke CSS token system with full Dark and Light mode support.
+- Styled using a bespoke CSS token system with Light Mode as default theme and Dark Mode toggle.
 - PDF generation handled client side via jsPDF.
 
 ### 2. Application Layer (Backend API)

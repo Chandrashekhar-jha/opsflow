@@ -19,13 +19,14 @@ import {
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'customers' | 'products' | 'challans'>('dashboard');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
   useEffect(() => {
     const user = getCurrentUser();
     if (user) {
       setCurrentUser(user);
     }
+    document.documentElement.setAttribute('data-theme', 'light');
   }, []);
 
   const toggleTheme = () => {
